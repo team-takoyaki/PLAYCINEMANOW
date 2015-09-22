@@ -25,24 +25,44 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
+
     Template.cinema.events({
         'ended video': function () {
-            console.log("video ended");
+            //カウント
+            Session.set('counter', Session.get('counter') + 1);
         }
     });
 
     // This code only runs on the client
     Template.cinema.helpers({
         cinema: function() {
+
+            //初期設定値
+            Session.setDefault('counter', 0);
+
+            //counterはcinema.eventsでカウントアップ
             var cinema_lists = getCinemaLists();
-            var url = cinema_lists[0].info.trailer_url;
-            console.log('url: ' + url);
-            return url;
+
+            //動画全体の数を取得
+            var movie_count = 0;
+            for (var j in cinema_lists){
+                movie_count++;
+            }
+            //再生する順番を取得
+            var counter = Session.get('counter');
+
+            //もしも最後のものを再生した後なら最初から
+            if (movie_count < counter) {
+                Session.set('counter', 0);
+            }
+
+            return cinema_lists[counter].info.trailer_url;
         }
     });
 }
 
 function getCinemaLists() {
+
     var cinemaLists = Cinema.find().fetch();
     // insert sample
     if (0 >= cinemaLists.length) {
@@ -51,6 +71,7 @@ function getCinemaLists() {
     }
     console.log(cinemaLists);
     return cinemaLists;
+
 }
 
 function insertSampleCinemaLists() {
