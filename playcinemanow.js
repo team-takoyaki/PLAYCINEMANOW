@@ -42,7 +42,7 @@ if (Meteor.isClient) {
     }
 
     Template.cinema.events({
-        'ended video': function () {
+        'ended video': function (event, template) {
             var counter = Session.get('counter');
             counter += 1;
             //もしも最後のものを再生した後なら最初から
@@ -52,7 +52,7 @@ if (Meteor.isClient) {
             Session.set('counter', counter);
             var url = cinemaLists[counter].info.trailer_url;
             console.log('COUNT:' + counter + ', URL: ' + url);
-            var video = document.querySelector('video');
+            var video = template.find('video');
             video.src = url;
             video.play();
         }
