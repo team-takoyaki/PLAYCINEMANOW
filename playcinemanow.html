@@ -1,14 +1,12 @@
 <head>
   <title>PLAY CINEMA NOW!!!</title>
-  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   {{> cinema}}
 </body>
 
 <template name="cinema">
-  <!--ここのposter画像を変更-->
   <video autoplay controls>
-     <source src="{{cinema}}" type="video/mp4" />
+     <source type="video/mp4" />
   </video>
 </template>
