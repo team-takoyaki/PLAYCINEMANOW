@@ -1,14 +1,11 @@
 Cinema = new Mongo.Collection("cinema");
-
+var client =  Meteor.npmRequire('cheerio-httpcli');
+client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
+  {},
+  parseCinemaTitles
+);
 
 if (Meteor.isServer) {
-  var client =  Meteor.npmRequire('cheerio-httpcli');
-  client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
-    {},
-    function(err, $, res) {
-      console.log($('li.col a').text());
-    }
-  );
   SyncedCron.add({
     name: 'Get CinemaObject by cron',
     schedule: function(parser) {
@@ -53,6 +50,16 @@ if (Meteor.isClient) {
       return Cinema.find({});
     }
   });
+}
+
+function parseCinemaTitles(err, $, result) {
+  var cinemaTitles = [];
+  $('li.col a').each(function() {
+    if ($(this).attr('title')) {
+      cinemaTitles.push($(this).attr('title'));
+    }
+  });
+  // console.log(cinemaTitles);
 }
 
 function CinemaCronJob() {

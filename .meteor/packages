@@ -8,7 +8,6 @@ meteor-platform
 autopublish
 insecure
 percolate:synced-cron
-http
 meteorhacks:npm
 
 
