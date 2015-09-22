@@ -1,1 +1,0 @@
-takumi@t-kashima.local.26158
