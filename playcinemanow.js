@@ -1,24 +1,4 @@
 Cinema = new Mongo.Collection("cinema");
-
-if (Meteor.isServer) {
-  // SyncedCron.add({
-  //   name: 'CinemaInfo cron job',
-  //   schedule: function(parser) {
-  //     // ==== for debug ====
-  //     return parser.text('every 1 hour');
-  //     // return parser.text('at 10:15 am');
-  //   },
-  //   job: function() {
-  //     var cinemaCronJob = CinemaCronJob();
-  //     return cinemaCronJob;
-  //   }
-  // });
-    //   SyncedCron.start();
-    Meteor.startup(function () {
-        CinemaCronJob();
-    });
-}
-
 if (Meteor.isClient) {
     // This code only runs on the client
     Template.body.helpers({
@@ -28,48 +8,72 @@ if (Meteor.isClient) {
     });
 }
 
+
+//=============================
+
+if (Meteor.isServer) {
+    SyncedCron.add({
+        name: 'CinemaInfo cron job',
+        schedule: function(parser) {
+            return parser.text('at 4:15 am');
+        },
+        job: function() {
+            var cinemaCronJob = CinemaCronJob();
+            Cinema.remove({});
+            return cinemaCronJob;
+        }
+    });
+    Meteor.startup(function () {
+        SyncedCron.start();
+        var findResult = Cinema.find().fetch();
+        if (0 >= findResult.length) {
+            CinemaCronJob();
+        }
+    });
+}
+
 function CinemaCronJob() {
     var getCinemaInfo = function (err, $, res) {
-      var cinemaTitles = [];
-      $('li.col a').each(function() {
-        if ($(this).attr('title')) {
-          cinemaTitles.push($(this).attr('title'));
-        }
-      });
+        var cinemaTitles = [];
+        $('li.col a').each(function() {
+            if ($(this).attr('title')) {
+                cinemaTitles.push($(this).attr('title'));
+            }
+        });
 
-      for (var i = 0; i < cinemaTitles.length; i++) {
-        videoSearch(cinemaTitles[i]);
-      }
+        for (var i = 0; i < cinemaTitles.length; i++) {
+            videoSearch(cinemaTitles[i]);
+        }
     };
 
     var client =  Meteor.npmRequire('cheerio-httpcli');
     client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
-      {},
-      getCinemaInfo
+        {},
+        getCinemaInfo
     );
 }
 
 function operateMongo(cinemaInfo) {
 
-  var parseForMongo = function(info) {
-    return {
-      "title": info["title"],
-      "info": {
-        "trailer_url": info["url"],
-        "description": info["description"]
-      }
+    var parseForMongo = function(info) {
+        return {
+            "title": info["title"],
+            "info": {
+                "trailer_url": info["url"],
+                "description": info["description"]
+            }
+        };
     };
-  };
 
-  var insertMongo = function(insertObject) {
-      var now = new Date();
-      var unixTime = Math.floor(now / 1000);
-      insertObject["register_date"] = unixTime;
-      
-      Cinema.insert(insertObject);
-  };
+    var insertMongo = function(insertObject) {
+        var now = new Date();
+        var unixTime = Math.floor(now / 1000);
+        insertObject["register_date"] = unixTime;
 
-  insertMongo(parseForMongo(cinemaInfo));
+        Cinema.insert(insertObject);
+    };
+
+    insertMongo(parseForMongo(cinemaInfo));
 }
 
 function videoSearch(keyword) {
@@ -89,7 +93,7 @@ function videoSearch(keyword) {
         var videoId = item.id.videoId;
         console.log('VideoID: ' + videoId);
         if (!videoId) {
-          return;
+            return;
         }
         getYouTubeInfo(videoId);
     });
@@ -100,12 +104,12 @@ function getYouTubeInfo(videoId, callback) {
     var url = 'https://www.youtube.com/watch?v=' + videoId;
     var options = [];
     youTubeDownloader.getInfo(url, options, function(error, info) {
-      if (error) {
-        return;
-      }
-      if (!info) {
-        return;
-      }
+        if (error) {
+            return;
+        }
+        if (!info) {
+            return;
+        }
         console.log(info.title);
         var Fiber = Meteor.npmRequire('fibers');
         Fiber(function() {
