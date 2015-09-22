@@ -7,11 +7,16 @@
   {{#each cinema_list}}
     {{> cinema_info}}
   {{/each}}
+
+  {{> cinema}}
 </body>
 
 <template name="cinema_info">
   <div>
     <span>{{title}}</span>
     <li>{{info.trailer_url}}</li>
+    <video id="cinema" autoplay loop muted controls poster="http://webfeelfree.com/sample/img/bg_20140214.jpg">
+       <source src="{{info.trailer_url}}" type="video/mp4" />
+    </video>
   </div>
 </template>
