@@ -1,5 +1,6 @@
 Cinema = new Mongo.Collection("cinema");
 
+
 if (Meteor.isServer) {
   var cheerio =  Meteor.npmRequire('cheerio-httpcli');
   HTTP.get(
@@ -22,7 +23,29 @@ if (Meteor.isServer) {
       return cinemaCronJob;
     }
   });
-  // SyncedCron.start();
+    // SyncedCron.start();
+var videoSearch = function(keyword, count, callback) {
+    var YouTube = Meteor.npmRequire('youtube-node');
+    var youTube = new YouTube();
+    youTube.setKey('AIzaSyCAkVyShgocmoAJYYbnSd1Xm-Jmce-aCs4');
+    youTube.search(keyword, count, function(error, result) {
+        if (error) {
+            console.log(error);
+        } else {
+            var count = result.items.length;
+            if (0 >= count) {
+                return;
+            }
+            var item = result.items[0];
+            var videoId = item.id.videoId;
+            console.log('VideoID: ' + videoId);
+            if (callback != null) {
+                callback();
+            }
+        }
+    });
+}
+    videoSearch('abc', 1, null);
 }
 
 if (Meteor.isClient) {
