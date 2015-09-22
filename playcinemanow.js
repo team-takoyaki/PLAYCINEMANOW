@@ -18,9 +18,16 @@ if (Meteor.isServer) {
 
 if (Meteor.isClient) {
   // This code only runs on the client
-  Template.body.helpers({
-    cinema_list: function () {
-      return Cinema.find({});
+  Template.cinema.helpers({
+    cinema: function() {
+      var cinema_lists = Cinema.find({}).fetch();
+
+      var aud = document.getElementById("cinema");
+      aud.onended = function() {
+          alert("The audio has ended");
+      };
+
+      return cinema_lists[0].info.trailer_url;
     }
   });
 }
@@ -49,3 +56,4 @@ function CinemaCronJob() {
 
   insertMongo(getCinemaInfo());
 }
+
