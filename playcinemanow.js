@@ -46,6 +46,8 @@ function getCinemaLists() {
     var array = [];
     var info = {'trailer_url': 'https://r16---sn-oguesnlk.googlevideo.com/videoplayback?ratebypass=yes&sver=3&signature=72CFA595700C120FD2E23D7097C1FC5DF2E2C7B4.0FA00C2B6049C1A4A2F0F3D1BDE7951926FF5569&ipbits=0&ip=111.107.156.181&key=cms1&upn=YckR4ZCGrOg&id=15ce1e673fd15d56&sparams=dur,expire,id,initcwndbps,ip,ipbits,itag,lmt,mime,mm,mn,ms,mv,nh,pl,ratebypass,requiressl,source,upn&lmt=1440661907969728&fexp=9405994%2C9408136%2C9408495%2C9408710%2C9408939%2C9409069%2C9409172%2C9410705%2C9415365%2C9415485%2C9416023%2C9416126%2C9416524%2C9416729%2C9416985%2C9417707%2C9418008%2C9418153%2C9418204%2C9418448%2C9419785%2C9420348%2C9420382%2C9420928%2C9421013%2C9421153%2C9421291&requiressl=yes&source=youtube&itag=22&pl=20&dur=106.881&mime=video%2Fmp4&expire=1442935371&redirect_counter=1&req_id=880712ebf299a3ee&cms_redirect=yes&mm=30&mn=sn-oguesnlk&ms=nxu&mt=1442913792&mv=m&nh=IgpwcjAyLm5ydDEwKgkxMjcuMC4wLjE'};
     array.push({info: info});
+    array.push({info: info});
+    array.push({info: info});
     return array;
     // return Cinema.find({});
 }
