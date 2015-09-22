@@ -7,62 +7,59 @@ if (Meteor.isServer) {
                  parseCinemaTitles
                 );
 
-    SyncedCron.add({
-        name: 'Get CinemaObject by cron',
-        schedule: function(parser) {
-            // ==== for debug ====
-            return parser.text('every 3 seconds');
-            // return parser.text('at 10:15 am');
-        },
-        job: function() {
-            var cinemaCronJob = CinemaCronJob();
-            return cinemaCronJob;
-        }
-    });
-    // SyncedCron.start();
+    // SyncedCron.add({
+    //     name: 'Get CinemaObject by cron',
+    //     schedule: function(parser) {
+    //         // ==== for debug ====
+    //         return parser.text('every 3 seconds');
+    //         // return parser.text('at 10:15 am');
+    //     },
+    //     job: function() {
+    //         var cinemaCronJob = CinemaCronJob();
+    //         return cinemaCronJob;
+    //     }
+    // });
+    // // SyncedCron.start();
 
-    videoSearch('ピクセル　プロモーション映像　劇場予告編1');
+    // videoSearch('ピクセル　プロモーション映像　劇場予告編1');
 }
 
 if (Meteor.isClient) {
+    // 初期設定値
+    Session.setDefault('counter', 0);
+    //counterはcinema.eventsでカウントアップ
+    var cinemaLists = getCinemaLists();
+    //動画全体の数を取得
+    var movieCount = cinemaLists.length;
+
+    Template.cinema.rendered = function() {
+            var counter = Session.get('counter');
+            var url = cinemaLists[counter].info.trailer_url;
+            var video = document.querySelector('video');
+            console.log('URL: ' + url);
+            video.src = url;
+            video.play();
+    }
 
     Template.cinema.events({
         'ended video': function () {
-            //カウント
-            Session.set('counter', Session.get('counter') + 1);
-        }
-    });
-
-    // This code only runs on the client
-    Template.cinema.helpers({
-        cinema: function() {
-
-            //初期設定値
-            Session.setDefault('counter', 0);
-
-            //counterはcinema.eventsでカウントアップ
-            var cinema_lists = getCinemaLists();
-
-            //動画全体の数を取得
-            var movie_count = 0;
-            for (var j in cinema_lists){
-                movie_count++;
-            }
-            //再生する順番を取得
             var counter = Session.get('counter');
-
+            counter += 1;
             //もしも最後のものを再生した後なら最初から
-            if (movie_count < counter) {
-                Session.set('counter', 0);
+            if (movieCount < counter) {
+                counter = 0;
             }
-
-            return cinema_lists[counter].info.trailer_url;
+            Session.set('counter', counter);
+            var url = cinemaLists[counter].info.trailer_url;
+            console.log('COUNT:' + counter + ', URL: ' + url);
+            var video = document.querySelector('video');
+            video.src = url;
+            video.play();
         }
     });
 }
 
 function getCinemaLists() {
-
     var cinemaLists = Cinema.find().fetch();
     // insert sample
     if (0 >= cinemaLists.length) {
