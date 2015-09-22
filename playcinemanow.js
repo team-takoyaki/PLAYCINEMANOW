@@ -3,26 +3,25 @@ Cinema = new Meteor.Collection("cinema");
 if (Meteor.isClient) {
     // 初期設定値
     Session.setDefault('counter', 0);
-    //counterはcinema.eventsでカウントアップ
-    var cinemaLists = getCinemaLists();
-    //動画全体の数を取得
-    var movieCount = cinemaLists.length;
+    var cinemaLists = [];
 
-    Template.cinema.rendered = function() {
+    Meteor.subscribe('cinemaList', function() {
+        cinemaLists = getCinemaLists();
+        // counterはcinema.eventsでカウントアップ
         var counter = Session.get('counter');
         var url = cinemaLists[counter].info.trailer_url;
         var video = document.querySelector('video');
         console.log('URL: ' + url);
         video.src = url;
         video.play();
-    }
+    });
 
     Template.cinema.events({
         'ended video': function (event, template) {
             var counter = Session.get('counter');
             counter += 1;
             //もしも最後のものを再生した後なら最初から
-            if (movieCount < counter) {
+            if (cinemaLists.length < counter) {
                 counter = 0;
             }
             Session.set('counter', counter);
@@ -61,6 +60,10 @@ if (Meteor.isServer) {
         if (0 >= findResult.length) {
             CinemaCronJob();
         }
+    });
+
+    Meteor.publish('cinemaList', function() {
+        return Cinema.find({});
     });
 }
 
