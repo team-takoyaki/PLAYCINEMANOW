@@ -1,42 +1,46 @@
 Cinema = new Meteor.Collection("cinema");
 
 if (Meteor.isClient) {
-    // 初期設定値
-    Session.setDefault('counter', 0);
     var cinemaLists = [];
 
-    Meteor.subscribe('cinemaList', function() {
+    Meteor.subscribe('onReady', function() {
         cinemaLists = getCinemaLists();
+        // 初期設定値
         // counterはcinema.eventsでカウントアップ
-        var counter = Session.get('counter');
-        var url = cinemaLists[counter].info.trailer_url;
-        var video = document.querySelector('video');
-        console.log('URL: ' + url);
-        video.src = url;
-        video.play();
+        Session.set('counter', Math.floor(Math.random() * cinemaLists.length));
+        play();
     });
 
     Template.cinema.events({
         'ended video': function (event, template) {
             var counter = Session.get('counter');
             counter += 1;
-            //もしも最後のものを再生した後なら最初から
-            if (cinemaLists.length < counter) {
-                counter = 0;
-            }
             Session.set('counter', counter);
-            var url = cinemaLists[counter].info.trailer_url;
-            console.log('COUNT:' + counter + ', URL: ' + url);
-            var video = template.find('video');
-            video.src = url;
-            video.play();
+
+            play();
         }
     });
 }
 
+function play() {
+    var counter = Session.get('counter');
+    if (!cinemaLists[counter]) {
+        counter += 1;
+        if (cinemaLists.length < counter) {
+            counter = 0;
+        }
+        Session.set('counter', counter);
+        play();
+        return;
+    }
+    var url = cinemaLists[counter].info.trailer_url;
+    var video = document.querySelector('video');
+    video.src = url;
+    video.play();
+}
+
 function getCinemaLists() {
     var cinemas = Cinema.find({}).fetch();
-    console.log(cinemas.length);
     return cinemas;
 }
 
@@ -62,7 +66,7 @@ if (Meteor.isServer) {
         }
     });
 
-    Meteor.publish('cinemaList', function() {
+    Meteor.publish('onReady', function() {
         return Cinema.find({});
     });
 }

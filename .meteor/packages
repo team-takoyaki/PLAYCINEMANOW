@@ -9,4 +9,3 @@ insecure
 percolate:synced-cron
 meteorhacks:npm
 npm-container
-autopublish
