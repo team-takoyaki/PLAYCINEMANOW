@@ -1,26 +1,26 @@
 Cinema = new Mongo.Collection("cinema");
 
-if (Meteor.isServer) {
-    HTTP.get(
-        'http://movies.yahoo.co.jp/trailer/intheater/',
-        function(error, result){
-            console.log(result);
-        }
-    );
-    SyncedCron.add({
-        name: 'Get CinemaObject by cron',
-        schedule: function(parser) {
-            // ==== for debug ====
-            return parser.text('every 3 seconds');
-            // return parser.text('at 10:15 am');
-        },
-        job: function() {
-            var cinemaCronJob = CinemaCronJob();
-            return cinemaCronJob;
-        }
-    });
-    // SyncedCron.start();
+var client =  Meteor.npmRequire('cheerio-httpcli');
+client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
+  {},
+  parseCinemaTitles
+);
 
+if (Meteor.isServer) {
+  SyncedCron.add({
+    name: 'Get CinemaObject by cron',
+    schedule: function(parser) {
+      // ==== for debug ====
+      return parser.text('every 3 seconds');
+      // return parser.text('at 10:15 am');
+    },
+    job: function() {
+      var cinemaCronJob = CinemaCronJob();
+      return cinemaCronJob;
+    }
+  });
+    // SyncedCron.start();
+    
     videoSearch('ピクセル　プロモーション映像　劇場予告編1');
 }
 
@@ -31,6 +31,16 @@ if (Meteor.isClient) {
             return Cinema.find({});
         }
     });
+}
+
+function parseCinemaTitles(err, $, result) {
+  var cinemaTitles = [];
+  $('li.col a').each(function() {
+    if ($(this).attr('title')) {
+      cinemaTitles.push($(this).attr('title'));
+    }
+  });
+  // console.log(cinemaTitles);
 }
 
 function CinemaCronJob() {
