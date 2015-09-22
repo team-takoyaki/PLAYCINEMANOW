@@ -5,8 +5,8 @@
 # but you can also edit it by hand.
 
 meteor-platform
-autopublish
 insecure
 percolate:synced-cron
 meteorhacks:npm
 npm-container
+autopublish

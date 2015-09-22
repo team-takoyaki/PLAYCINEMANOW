@@ -1,4 +1,4 @@
-Cinema = new Mongo.Collection("cinema");
+Cinema = new Meteor.Collection("cinema");
 
 if (Meteor.isClient) {
     // 初期設定値
@@ -9,12 +9,12 @@ if (Meteor.isClient) {
     var movieCount = cinemaLists.length;
 
     Template.cinema.rendered = function() {
-            var counter = Session.get('counter');
-            var url = cinemaLists[counter].info.trailer_url;
-            var video = document.querySelector('video');
-            console.log('URL: ' + url);
-            video.src = url;
-            video.play();
+        var counter = Session.get('counter');
+        var url = cinemaLists[counter].info.trailer_url;
+        var video = document.querySelector('video');
+        console.log('URL: ' + url);
+        video.src = url;
+        video.play();
     }
 
     Template.cinema.events({
@@ -36,7 +36,9 @@ if (Meteor.isClient) {
 }
 
 function getCinemaLists() {
-    return Cinema.find().fetch();
+    var cinemas = Cinema.find({}).fetch();
+    console.log(cinemas.length);
+    return cinemas;
 }
 
 //=============================
