@@ -4,17 +4,11 @@
 
 <body>
   <h1>Welcome to Meteor!</h1>
-  {{#each cinema_list}}
-    {{> cinema_info}}
-  {{/each}}
+  {{> cinema}}
 </body>
 
-<template name="cinema_info">
-  <div>
-    <span>{{title}}</span>
-    <li>{{info.trailer_url}}</li>
-    <video id="cinema" autoplay loop muted controls poster="http://webfeelfree.com/sample/img/bg_20140214.jpg">
-       <source src="{{info.trailer_url}}" type="video/mp4" />
-    </video>
-  </div>
+<template name="cinema">
+  <video id="cinema" autoplay controls poster="http://webfeelfree.com/sample/img/bg_20140214.jpg">
+     <source src="{{cinema}}" type="video/mp4" />
+  </video>
 </template>
