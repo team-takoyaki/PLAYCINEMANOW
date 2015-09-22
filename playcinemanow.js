@@ -1,52 +1,63 @@
 Cinema = new Mongo.Collection("cinema");
 
-var client =  Meteor.npmRequire('cheerio-httpcli');
-client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
-  {},
-  parseCinemaTitles
-);
-
 if (Meteor.isServer) {
-  SyncedCron.add({
-    name: 'Get CinemaObject by cron',
-    schedule: function(parser) {
-      // ==== for debug ====
-      return parser.text('every 3 seconds');
-      // return parser.text('at 10:15 am');
-    },
-    job: function() {
-      var cinemaCronJob = CinemaCronJob();
-      return cinemaCronJob;
-    }
-  });
+    var client =  Meteor.npmRequire('cheerio-httpcli');
+    client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
+                 {},
+                 parseCinemaTitles
+                );
+
+    SyncedCron.add({
+        name: 'Get CinemaObject by cron',
+        schedule: function(parser) {
+            // ==== for debug ====
+            return parser.text('every 3 seconds');
+            // return parser.text('at 10:15 am');
+        },
+        job: function() {
+            var cinemaCronJob = CinemaCronJob();
+            return cinemaCronJob;
+        }
+    });
     // SyncedCron.start();
-    
+
     videoSearch('ピクセル　プロモーション映像　劇場予告編1');
 }
 
 if (Meteor.isClient) {
-  // This code only runs on the client
-  Template.cinema.helpers({
-    cinema: function() {
-      var cinema_lists = Cinema.find({}).fetch();
+    Template.cinema.events({
+        'ended video': function () {
+            console.log("video ended");
+        }
+    });
 
-      var aud = document.getElementById("cinema");
-      aud.onended = function() {
-          alert("The audio has ended");
-      };
-      return cinema_lists[0].info.trailer_url;
-    }
-  });
+    // This code only runs on the client
+    Template.cinema.helpers({
+        cinema: function() {
+            var cinema_lists = getCinemaLists();
+            var url = cinema_lists[0].info.trailer_url;
+            console.log('url: ' + url);
+            return url;
+        }
+    });
+}
+
+function getCinemaLists() {
+    var array = [];
+    var info = {'trailer_url': 'https://r16---sn-oguesnlk.googlevideo.com/videoplayback?ratebypass=yes&sver=3&signature=72CFA595700C120FD2E23D7097C1FC5DF2E2C7B4.0FA00C2B6049C1A4A2F0F3D1BDE7951926FF5569&ipbits=0&ip=111.107.156.181&key=cms1&upn=YckR4ZCGrOg&id=15ce1e673fd15d56&sparams=dur,expire,id,initcwndbps,ip,ipbits,itag,lmt,mime,mm,mn,ms,mv,nh,pl,ratebypass,requiressl,source,upn&lmt=1440661907969728&fexp=9405994%2C9408136%2C9408495%2C9408710%2C9408939%2C9409069%2C9409172%2C9410705%2C9415365%2C9415485%2C9416023%2C9416126%2C9416524%2C9416729%2C9416985%2C9417707%2C9418008%2C9418153%2C9418204%2C9418448%2C9419785%2C9420348%2C9420382%2C9420928%2C9421013%2C9421153%2C9421291&requiressl=yes&source=youtube&itag=22&pl=20&dur=106.881&mime=video%2Fmp4&expire=1442935371&redirect_counter=1&req_id=880712ebf299a3ee&cms_redirect=yes&mm=30&mn=sn-oguesnlk&ms=nxu&mt=1442913792&mv=m&nh=IgpwcjAyLm5ydDEwKgkxMjcuMC4wLjE'};
+    array.push({info: info});
+    return array;
+    // return Cinema.find({});
 }
 
 function parseCinemaTitles(err, $, result) {
-  var cinemaTitles = [];
-  $('li.col a').each(function() {
-    if ($(this).attr('title')) {
-      cinemaTitles.push($(this).attr('title'));
-    }
-  });
-  // console.log(cinemaTitles);
+    var cinemaTitles = [];
+    $('li.col a').each(function() {
+        if ($(this).attr('title')) {
+            cinemaTitles.push($(this).attr('title'));
+        }
+    });
+    // console.log(cinemaTitles);
 }
 
 function CinemaCronJob() {
