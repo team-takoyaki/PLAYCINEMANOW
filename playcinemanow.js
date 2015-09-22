@@ -1,29 +1,5 @@
 Cinema = new Mongo.Collection("cinema");
 
-if (Meteor.isServer) {
-    var client =  Meteor.npmRequire('cheerio-httpcli');
-    client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
-                 {},
-                 parseCinemaTitles
-                );
-
-    SyncedCron.add({
-        name: 'Get CinemaObject by cron',
-        schedule: function(parser) {
-            // ==== for debug ====
-            return parser.text('every 3 seconds');
-            // return parser.text('at 10:15 am');
-        },
-        job: function() {
-            var cinemaCronJob = CinemaCronJob();
-            return cinemaCronJob;
-        }
-    });
-    // SyncedCron.start();
-
-    videoSearch('ピクセル　プロモーション映像　劇場予告編1');
-}
-
 if (Meteor.isClient) {
 
     Template.cinema.events({
@@ -88,39 +64,71 @@ function insertSampleCinemaLists() {
     }
 }
 
-function parseCinemaTitles(err, $, result) {
-    var cinemaTitles = [];
-    $('li.col a').each(function() {
-        if ($(this).attr('title')) {
-            cinemaTitles.push($(this).attr('title'));
+//=============================
+
+if (Meteor.isServer) {
+    SyncedCron.add({
+        name: 'CinemaInfo cron job',
+        schedule: function(parser) {
+            return parser.text('at 4:15 am');
+        },
+        job: function() {
+            var cinemaCronJob = CinemaCronJob();
+            Cinema.remove({});
+            return cinemaCronJob;
         }
     });
-    // console.log(cinemaTitles);
+    Meteor.startup(function () {
+        SyncedCron.start();
+        var findResult = Cinema.find().fetch();
+        if (0 >= findResult.length) {
+            CinemaCronJob();
+        }
+    });
 }
 
 function CinemaCronJob() {
-    var getCinemaInfo = function () {
-        // ここに情報持ってくる処理
-        var cinemaObject = {
-            "title": "xxx",
+    var getCinemaInfo = function (err, $, res) {
+        var cinemaTitles = [];
+        $('li.col a').each(function() {
+            if ($(this).attr('title')) {
+                cinemaTitles.push($(this).attr('title'));
+            }
+        });
+
+        for (var i = 0; i < cinemaTitles.length; i++) {
+            videoSearch(cinemaTitles[i]);
+        }
+    };
+
+    var client =  Meteor.npmRequire('cheerio-httpcli');
+    client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
+        {},
+        getCinemaInfo
+    );
+}
+
+function operateMongo(cinemaInfo) {
+
+    var parseForMongo = function(info) {
+        return {
+            "title": info["title"],
             "info": {
-                "trailer_url": "http://xxx"
+                "trailer_url": info["url"],
+                "description": info["description"]
             }
         };
-        return cinemaObject;
     };
 
-    var insertMongo = function(cinemaInfo) {
+    var insertMongo = function(insertObject) {
         var now = new Date();
         var unixTime = Math.floor(now / 1000);
-        Cinema.insert({
-            "title": cinemaInfo["title"],
-            "info": cinemaInfo["info"],
-            "register_date":unixTime
-        });
+        insertObject["register_date"] = unixTime;
+
+        Cinema.insert(insertObject);
     };
 
-    // insertMongo(getCinemaInfo());
+    insertMongo(parseForMongo(cinemaInfo));
 }
 
 function videoSearch(keyword) {
@@ -139,11 +147,14 @@ function videoSearch(keyword) {
         var item = result.items[0];
         var videoId = item.id.videoId;
         console.log('VideoID: ' + videoId);
+        if (!videoId) {
+            return;
+        }
         getYouTubeInfo(videoId);
     });
 }
 
-function getYouTubeInfo(videoId) {
+function getYouTubeInfo(videoId, callback) {
     var youTubeDownloader = Meteor.npmRequire('youtube-dl');
     var url = 'https://www.youtube.com/watch?v=' + videoId;
     var options = [];
@@ -151,7 +162,13 @@ function getYouTubeInfo(videoId) {
         if (error) {
             return;
         }
-        // ここでデータベースに入れる
-        console.log('url: ', info.url);
+        if (!info) {
+            return;
+        }
+        console.log(info.title);
+        var Fiber = Meteor.npmRequire('fibers');
+        Fiber(function() {
+            operateMongo(info);
+        }).run();
     });
 }
