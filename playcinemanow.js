@@ -1,6 +1,12 @@
 Cinema = new Mongo.Collection("cinema");
 
 if (Meteor.isServer) {
+  HTTP.get(
+    'http://movies.yahoo.co.jp/trailer/intheater/',
+    function(error, result){
+      console.log(result);
+    }
+  );
   SyncedCron.add({
     name: 'Get CinemaObject by cron',
     schedule: function(parser) {
@@ -13,7 +19,7 @@ if (Meteor.isServer) {
       return cinemaCronJob;
     }
   });
-  SyncedCron.start();
+  // SyncedCron.start();
 }
 
 if (Meteor.isClient) {
@@ -47,5 +53,5 @@ function CinemaCronJob() {
     });
   };
 
-  insertMongo(getCinemaInfo());
+  // insertMongo(getCinemaInfo());
 }
