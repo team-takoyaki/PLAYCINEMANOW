@@ -108,9 +108,9 @@ function CinemaCronJob() {
     );
 }
 
-function operateMongo(cinemaInfo) {
+function OperateMongo() {
 
-    var parseForMongo = function(info) {
+    this.parseForMongo = function(info) {
         return {
             "title": info["title"],
             "info": {
@@ -120,15 +120,13 @@ function operateMongo(cinemaInfo) {
         };
     };
 
-    var insertMongo = function(insertObject) {
+    this.insertMongo = function(insertObject) {
         var now = new Date();
         var unixTime = Math.floor(now / 1000);
         insertObject["register_date"] = unixTime;
 
         Cinema.insert(insertObject);
     };
-
-    insertMongo(parseForMongo(cinemaInfo));
 }
 
 function videoSearch(keyword) {
@@ -168,7 +166,9 @@ function getYouTubeInfo(videoId, callback) {
         console.log(info.title);
         var Fiber = Meteor.npmRequire('fibers');
         Fiber(function() {
-            operateMongo(info);
+            var operateMongo = new OperateMongo();
+            var insertObject = operateMongo.parseForMongo(info);
+            operateMongo.insertMongo(insertObject);
         }).run();
     });
 }
