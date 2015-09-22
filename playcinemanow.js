@@ -1,19 +1,22 @@
 Cinema = new Mongo.Collection("cinema");
 
 if (Meteor.isServer) {
-  SyncedCron.add({
-    name: 'CinemaInfo cron job',
-    schedule: function(parser) {
-      // ==== for debug ====
-      return parser.text('every 10 seconds');
-      // return parser.text('at 10:15 am');
-    },
-    job: function() {
-      var cinemaCronJob = CinemaCronJob();
-      return cinemaCronJob;
-    }
-  });
-  SyncedCron.start();
+  // SyncedCron.add({
+  //   name: 'CinemaInfo cron job',
+  //   schedule: function(parser) {
+  //     // ==== for debug ====
+  //     return parser.text('every 1 hour');
+  //     // return parser.text('at 10:15 am');
+  //   },
+  //   job: function() {
+  //     var cinemaCronJob = CinemaCronJob();
+  //     return cinemaCronJob;
+  //   }
+  // });
+    //   SyncedCron.start();
+    Meteor.startup(function () {
+        CinemaCronJob();
+    });
 }
 
 if (Meteor.isClient) {
@@ -59,10 +62,11 @@ function operateMongo(cinemaInfo) {
   };
 
   var insertMongo = function(insertObject) {
-    var now = new Date();
-    var unixTime = Math.floor(now / 1000);
-    insertObject["register_date"] = unixTime;
-    // Cinema.insert(insertObject);
+      var now = new Date();
+      var unixTime = Math.floor(now / 1000);
+      insertObject["register_date"] = unixTime;
+      
+      Cinema.insert(insertObject);
   };
 
   insertMongo(parseForMongo(cinemaInfo));
@@ -91,7 +95,7 @@ function videoSearch(keyword) {
     });
 }
 
-function getYouTubeInfo(videoId) {
+function getYouTubeInfo(videoId, callback) {
     var youTubeDownloader = Meteor.npmRequire('youtube-dl');
     var url = 'https://www.youtube.com/watch?v=' + videoId;
     var options = [];
@@ -102,7 +106,10 @@ function getYouTubeInfo(videoId) {
       if (!info) {
         return;
       }
-
-      operateMongo(info);
+        console.log(info.title);
+        var Fiber = Meteor.npmRequire('fibers');
+        Fiber(function() {
+            operateMongo(info);
+        }).run();
     });
 }
