@@ -4,11 +4,14 @@
 
 <body>
   <h1>Welcome to Meteor!</h1>
-
-  {{> hello}}
+  {{#each cinema_list}}
+    {{> cinema_info}}
+  {{/each}}
 </body>
 
-<template name="hello">
-  <button>Click Me</button>
-  <p>You've pressed the button {{counter}} times.</p>
+<template name="cinema_info">
+  <div>
+    <span>{{title}}</span>
+    <li>{{info.trailer_url}}</li>
+  </div>
 </template>
