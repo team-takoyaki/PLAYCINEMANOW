@@ -2,13 +2,11 @@ Cinema = new Mongo.Collection("cinema");
 
 
 if (Meteor.isServer) {
-  var cheerio =  Meteor.npmRequire('cheerio-httpcli');
-  HTTP.get(
-    'http://movies.yahoo.co.jp/trailer/intheater/',
-    function(error, result){
-      // var parser = new DOMParser();
-      // var resultDom = parser.parseFromString(result, "text/html");
-      console.log(result);
+  var client =  Meteor.npmRequire('cheerio-httpcli');
+  client.fetch('http://movies.yahoo.co.jp/trailer/intheater/',
+    {},
+    function(err, $, res) {
+      console.log($('li.col a').text());
     }
   );
   SyncedCron.add({
