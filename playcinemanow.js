@@ -83,20 +83,23 @@ function CinemaCronJob() {
     );
 }
 
-function OperateMongo() {
-    this.parseForMongo = function(info) {
+function OperateMongo(info) {
+    this.cinemaInfo = info;
+
+    this.parseForMongo = function() {
         return {
-            "title": info["title"],
+            "title": this.cinemaInfo["title"],
             "info": {
-                "trailer_url": info["url"],
-                "description": info["description"]
+                "trailer_url": this.cinemaInfo["url"],
+                "description": this.cinemaInfo["description"]
             }
         };
     };
 
-    this.insertMongo = function(insertObject) {
+    this.insertMongo = function() {
         var now = new Date();
         var unixTime = Math.floor(now / 1000);
+        var insertObject = this.parseForMongo();
         insertObject["register_date"] = unixTime;
 
         Cinema.insert(insertObject);
@@ -140,9 +143,8 @@ function getYouTubeInfo(videoId, callback) {
         console.log(info.title);
         var Fiber = Meteor.npmRequire('fibers');
         Fiber(function() {
-            var operateMongo = new OperateMongo();
-            var insertObject = operateMongo.parseForMongo(info);
-            operateMongo.insertMongo(insertObject);
+            var operateMongo = new OperateMongo(info);
+            operateMongo.insertMongo();
         }).run();
     });
 }
