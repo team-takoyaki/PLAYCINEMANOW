@@ -9,3 +9,7 @@ autopublish
 insecure
 percolate:synced-cron
 http
+meteorhacks:npm
+
+
+npm-container
