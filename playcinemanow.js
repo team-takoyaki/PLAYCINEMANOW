@@ -35,6 +35,8 @@ if (Meteor.isClient) {
           alert("The audio has ended");
       };
       return cinema_lists[0].info.trailer_url;
+    }
+  });
 }
 
 function parseCinemaTitles(err, $, result) {
