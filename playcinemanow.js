@@ -60,9 +60,10 @@ if (Meteor.isServer) {
     });
     Meteor.startup(function () {
         SyncedCron.start();
-        
-        // cron job at first
-        CinemaCronJob();
+        var findResult = Cinema.find().fetch();
+        if (0 >= findResult.length) {
+            CinemaCronJob();
+        }
     });
 
     Meteor.publish('onReady', function() {
