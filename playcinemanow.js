@@ -50,7 +50,7 @@ if (Meteor.isServer) {
     SyncedCron.add({
         name: 'CinemaInfo cron job',
         schedule: function(parser) {
-            return parser.text('at 4:15 am');
+            return parser.text('every 15 minutes');
         },
         job: function() {
             var cinemaCronJob = CinemaCronJob();
@@ -60,10 +60,9 @@ if (Meteor.isServer) {
     });
     Meteor.startup(function () {
         SyncedCron.start();
-        var findResult = Cinema.find().fetch();
-        if (0 >= findResult.length) {
-            CinemaCronJob();
-        }
+        
+        // cron job at first
+        CinemaCronJob();
     });
 
     Meteor.publish('onReady', function() {
